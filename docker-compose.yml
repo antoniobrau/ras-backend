@@ -1,0 +1,15 @@
+services:
+  db:
+    image: postgres:16
+    container_name: ras_postgres
+    environment:
+      POSTGRES_USER: ras_user
+      POSTGRES_PASSWORD: ras_pass
+      POSTGRES_DB: ras_db
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+volumes:
+  pgdata:
