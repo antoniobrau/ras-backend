@@ -11,5 +11,36 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
 
+  api:
+    build: 
+        context: ./backend
+        dockerfile: Dockerfile
+    container_name: ras_api
+    environment:
+      DATABASE_URL: postgresql://ras_user:ras_pass@db:5432/ras_db
+    ports:
+      - "8000:8000"
+    depends_on:
+      - db
+
+  seed:
+    profiles: ["seed"]
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: ras_seed
+    environment:
+      DATABASE_URL: postgresql://ras_user:ras_pass@db:5432/ras_db
+      PGPASSWORD: ras_pass
+    depends_on:
+      - db
+    command: >
+      bash -c "
+        until pg_isready -h db -U ras_user -d ras_db; do sleep 1; done &&
+        psql -h db -U ras_user -d ras_db -f db/schema.sql &&
+        python db/generate_data.py
+      "
+    restart: "no"
+
 volumes:
   pgdata:
