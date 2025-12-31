@@ -106,8 +106,8 @@ class RASRepo:
         """
         sql = """
         SELECT
-          COALESCE(SUM(ore_extra), 0) AS ore_extra_tot,
-          COALESCE(SUM(tot_spese), 0) AS spese_tot
+          COALESCE(SUM(ore_extra), 0)::double precision AS ore_extra_tot,
+          COALESCE(SUM(tot_spese), 0)::double precision AS spese_tot
         FROM ras_lines
         WHERE sheet_id = %(sheet_id)s;
         """

@@ -1,11 +1,13 @@
 {
-  "openapi": "3.0.3",
+  "openapi": "3.0.1",
   "info": {
     "title": "RAS Assistant API",
     "version": "0.1.0"
   },
   "servers": [
-    { "url": "http://46.224.118.210:8000" }
+    {
+      "url": "http://46.224.118.210:8000"
+    }
   ],
   "paths": {
     "/health": {
@@ -18,7 +20,10 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": { "type": "object" }
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
               }
             }
           }
@@ -35,7 +40,9 @@
             "name": "email",
             "in": "query",
             "required": true,
-            "schema": { "type": "string" }
+            "schema": {
+              "type": "string"
+            }
           }
         ],
         "responses": {
@@ -43,7 +50,9 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": { "$ref": "#/components/schemas/EmployeeOut" }
+                "schema": {
+                  "$ref": "#/components/schemas/EmployeeOut"
+                }
               }
             }
           },
@@ -51,7 +60,143 @@
             "description": "Validation Error",
             "content": {
               "application/json": {
-                "schema": { "type": "object" }
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ras/month-summary": {
+      "get": {
+        "tags": ["ras"],
+        "summary": "Month Summary",
+        "operationId": "month_summary_ras_month_summary_get",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "year",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "month",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "integer"
+            }
+          },
+          {
+            "name": "hours_per_workday",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 8
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/ras/period-summary": {
+      "get": {
+        "tags": ["ras"],
+        "summary": "Period Summary",
+        "operationId": "period_summary_ras_period_summary_get",
+        "parameters": [
+          {
+            "name": "email",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "from_ym",
+            "in": "query",
+            "required": true,
+            "description": "YYYYMM, es 202510",
+            "schema": {
+              "type": "integer",
+              "description": "YYYYMM, es 202510"
+            }
+          },
+          {
+            "name": "to_ym",
+            "in": "query",
+            "required": true,
+            "description": "YYYYMM, es 202512",
+            "schema": {
+              "type": "integer",
+              "description": "YYYYMM, es 202512"
+            }
+          },
+          {
+            "name": "hours_per_workday",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "default": 8
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "additionalProperties": true
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
               }
             }
           }
@@ -65,14 +210,66 @@
         "type": "object",
         "required": ["id", "full_name", "email", "active", "created_at"],
         "properties": {
-          "id": { "type": "integer" },
-          "full_name": { "type": "string" },
-          "email": { "type": "string" },
-          "site": { "type": "string", "nullable": true },
-          "level": { "type": "string", "nullable": true },
-          "company": { "type": "string", "nullable": true },
-          "active": { "type": "boolean" },
-          "created_at": { "type": "string", "format": "date-time" }
+          "id": {
+            "type": "integer"
+          },
+          "full_name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string"
+          },
+          "site": {
+            "type": "string",
+            "nullable": true
+          },
+          "level": {
+            "type": "string",
+            "nullable": true
+          },
+          "company": {
+            "type": "string",
+            "nullable": true
+          },
+          "active": {
+            "type": "boolean"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
+      },
+      "HTTPValidationError": {
+        "type": "object",
+        "properties": {
+          "detail": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            }
+          }
+        }
+      },
+      "ValidationError": {
+        "type": "object",
+        "required": ["loc", "msg", "type"],
+        "properties": {
+          "loc": {
+            "type": "array",
+            "items": {
+              "oneOf": [
+                { "type": "string" },
+                { "type": "integer" }
+              ]
+            }
+          },
+          "msg": {
+            "type": "string"
+          },
+          "type": {
+            "type": "string"
+          }
         }
       }
     }
