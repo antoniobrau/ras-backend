@@ -40,9 +40,7 @@
             "name": "email",
             "in": "query",
             "required": true,
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           }
         ],
         "responses": {
@@ -50,9 +48,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/EmployeeOut"
-                }
+                "schema": { "$ref": "#/components/schemas/EmployeeOut" }
               }
             }
           },
@@ -60,9 +56,7 @@
             "description": "Validation Error",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
               }
             }
           }
@@ -79,34 +73,25 @@
             "name": "email",
             "in": "query",
             "required": true,
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           },
           {
             "name": "year",
             "in": "query",
             "required": true,
-            "schema": {
-              "type": "integer"
-            }
+            "schema": { "type": "integer" }
           },
           {
             "name": "month",
             "in": "query",
             "required": true,
-            "schema": {
-              "type": "integer"
-            }
+            "schema": { "type": "integer" }
           },
           {
             "name": "hours_per_workday",
             "in": "query",
             "required": false,
-            "schema": {
-              "type": "integer",
-              "default": 8
-            }
+            "schema": { "type": "integer", "default": 8 }
           }
         ],
         "responses": {
@@ -114,10 +99,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                }
+                "schema": { "$ref": "#/components/schemas/MonthSummaryOut" }
               }
             }
           },
@@ -125,9 +107,7 @@
             "description": "Validation Error",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
               }
             }
           }
@@ -144,38 +124,27 @@
             "name": "email",
             "in": "query",
             "required": true,
-            "schema": {
-              "type": "string"
-            }
+            "schema": { "type": "string" }
           },
           {
             "name": "from_ym",
             "in": "query",
             "required": true,
             "description": "YYYYMM, es 202510",
-            "schema": {
-              "type": "integer",
-              "description": "YYYYMM, es 202510"
-            }
+            "schema": { "type": "integer", "description": "YYYYMM, es 202510" }
           },
           {
             "name": "to_ym",
             "in": "query",
             "required": true,
             "description": "YYYYMM, es 202512",
-            "schema": {
-              "type": "integer",
-              "description": "YYYYMM, es 202512"
-            }
+            "schema": { "type": "integer", "description": "YYYYMM, es 202512" }
           },
           {
             "name": "hours_per_workday",
             "in": "query",
             "required": false,
-            "schema": {
-              "type": "integer",
-              "default": 8
-            }
+            "schema": { "type": "integer", "default": 8 }
           }
         ],
         "responses": {
@@ -183,10 +152,7 @@
             "description": "Successful Response",
             "content": {
               "application/json": {
-                "schema": {
-                  "type": "object",
-                  "additionalProperties": true
-                }
+                "schema": { "$ref": "#/components/schemas/PeriodSummaryOut" }
               }
             }
           },
@@ -194,9 +160,7 @@
             "description": "Validation Error",
             "content": {
               "application/json": {
-                "schema": {
-                  "$ref": "#/components/schemas/HTTPValidationError"
-                }
+                "schema": { "$ref": "#/components/schemas/HTTPValidationError" }
               }
             }
           }
@@ -206,50 +170,129 @@
   },
   "components": {
     "schemas": {
+      "AbsencesOut": {
+        "type": "object",
+        "required": ["ferie_giorni", "permesso_giorni", "malattia_giorni"],
+        "properties": {
+          "ferie_giorni": { "type": "integer" },
+          "permesso_giorni": { "type": "integer" },
+          "malattia_giorni": { "type": "integer" }
+        },
+        "additionalProperties": false
+      },
+      "ChecksOut": {
+        "type": "object",
+        "required": ["days_without_lines", "mixed_days"],
+        "properties": {
+          "days_without_lines": { "type": "array", "items": { "type": "integer" } },
+          "mixed_days": { "type": "array", "items": { "type": "integer" } }
+        },
+        "additionalProperties": false
+      },
       "EmployeeOut": {
         "type": "object",
         "required": ["id", "full_name", "email", "active", "created_at"],
         "properties": {
-          "id": {
-            "type": "integer"
+          "id": { "type": "integer" },
+          "full_name": { "type": "string" },
+          "email": { "type": "string" },
+          "site": { "type": "string" },
+          "level": { "type": "string" },
+          "company": { "type": "string" },
+          "active": { "type": "boolean" },
+          "created_at": { "type": "string", "format": "date-time" }
+        },
+        "additionalProperties": false
+      },
+      "MonthSummaryOut": {
+        "type": "object",
+        "required": ["email", "year", "month", "exists"],
+        "properties": {
+          "email": { "type": "string" },
+          "year": { "type": "integer" },
+          "month": { "type": "integer" },
+          "exists": { "type": "boolean" },
+
+          "sheet_id": { "type": "integer" },
+          "absences": { "$ref": "#/components/schemas/AbsencesOut" },
+          "work_days": { "type": "integer" },
+          "ordinary_hours_est": { "type": "integer" },
+          "ore_extra_tot": { "type": "number" },
+          "spese_tot": { "type": "number" },
+          "checks": { "$ref": "#/components/schemas/ChecksOut" }
+        },
+        "additionalProperties": false
+      },
+      "PeriodMonthOut": {
+        "type": "object",
+        "required": [
+          "year",
+          "month",
+          "sheet_status",
+          "absences",
+          "work_days",
+          "ordinary_hours_est",
+          "ore_extra_tot",
+          "spese_tot"
+        ],
+        "properties": {
+          "year": { "type": "integer" },
+          "month": { "type": "integer" },
+          "sheet_status": { "type": "string" },
+          "absences": { "$ref": "#/components/schemas/AbsencesOut" },
+          "work_days": { "type": "integer" },
+          "ordinary_hours_est": { "type": "integer" },
+          "ore_extra_tot": { "type": "number" },
+          "spese_tot": { "type": "number" }
+        },
+        "additionalProperties": false
+      },
+      "PeriodTotalsOut": {
+        "type": "object",
+        "required": [
+          "ferie_giorni",
+          "permesso_giorni",
+          "malattia_giorni",
+          "work_days",
+          "ordinary_hours_est",
+          "ore_extra_tot",
+          "spese_tot"
+        ],
+        "properties": {
+          "ferie_giorni": { "type": "integer" },
+          "permesso_giorni": { "type": "integer" },
+          "malattia_giorni": { "type": "integer" },
+          "work_days": { "type": "integer" },
+          "ordinary_hours_est": { "type": "integer" },
+          "ore_extra_tot": { "type": "number" },
+          "spese_tot": { "type": "number" }
+        },
+        "additionalProperties": false
+      },
+      "PeriodSummaryOut": {
+        "type": "object",
+        "required": ["email", "from_ym", "to_ym", "months", "totals"],
+        "properties": {
+          "email": { "type": "string" },
+          "from_ym": { "type": "integer" },
+          "to_ym": { "type": "integer" },
+          "months": {
+            "type": "array",
+            "items": { "$ref": "#/components/schemas/PeriodMonthOut" }
           },
-          "full_name": {
-            "type": "string"
-          },
-          "email": {
-            "type": "string"
-          },
-          "site": {
-            "type": "string",
-            "nullable": true
-          },
-          "level": {
-            "type": "string",
-            "nullable": true
-          },
-          "company": {
-            "type": "string",
-            "nullable": true
-          },
-          "active": {
-            "type": "boolean"
-          },
-          "created_at": {
-            "type": "string",
-            "format": "date-time"
-          }
-        }
+          "totals": { "$ref": "#/components/schemas/PeriodTotalsOut" }
+        },
+        "additionalProperties": false
       },
       "HTTPValidationError": {
         "type": "object",
         "properties": {
           "detail": {
             "type": "array",
-            "items": {
-              "$ref": "#/components/schemas/ValidationError"
-            }
+            "items": { "$ref": "#/components/schemas/ValidationError" }
           }
-        }
+        },
+        "additionalProperties": false
       },
       "ValidationError": {
         "type": "object",
@@ -257,20 +300,12 @@
         "properties": {
           "loc": {
             "type": "array",
-            "items": {
-              "oneOf": [
-                { "type": "string" },
-                { "type": "integer" }
-              ]
-            }
+            "items": { "type": "string" }
           },
-          "msg": {
-            "type": "string"
-          },
-          "type": {
-            "type": "string"
-          }
-        }
+          "msg": { "type": "string" },
+          "type": { "type": "string" }
+        },
+        "additionalProperties": false
       }
     }
   }

@@ -6,8 +6,6 @@ services:
       POSTGRES_USER: ras_user
       POSTGRES_PASSWORD: ras_pass
       POSTGRES_DB: ras_db
-    ports:
-      - "5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
 
@@ -19,7 +17,7 @@ services:
     environment:
       DATABASE_URL: postgresql://ras_user:ras_pass@db:5432/ras_db
     ports:
-      - "8000:8000"
+      - "8081:8000"
     depends_on:
       - db
 
