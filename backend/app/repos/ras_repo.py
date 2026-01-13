@@ -64,22 +64,40 @@ class RASRepo:
 
     def get_absence_days(self, sheet_id: int):
         """
-        Giorni di assenza per tipo (FERIE / PERMESSO / MALATTIA).
+        Giorni di assenza (array separati) per FERIE / PERMESSO / MALATTIA.
         """
         sql = """
-        SELECT activity_desc AS tipo,
-               ARRAY_AGG(DISTINCT day ORDER BY day) AS giorni
-        FROM ras_lines
-        WHERE sheet_id = %(sheet_id)s
-          AND activity_desc IN ('FERIE','PERMESSO','MALATTIA')
-        GROUP BY activity_desc;
+        WITH x AS (
+          SELECT
+            make_date(s.year, s.month, l.day) AS work_date,
+            l.activity_desc
+          FROM ras_lines l
+          JOIN ras_sheets s ON s.id = l.sheet_id
+          WHERE l.sheet_id = %(sheet_id)s
+            AND l.activity_desc IN ('FERIE','PERMESSO','MALATTIA')
+        )
+        SELECT
+          ARRAY_AGG(DISTINCT work_date ORDER BY work_date)
+            FILTER (WHERE activity_desc = 'FERIE')     AS ferie_giorni,
+          ARRAY_AGG(DISTINCT work_date ORDER BY work_date)
+            FILTER (WHERE activity_desc = 'PERMESSO')  AS permesso_giorni,
+          ARRAY_AGG(DISTINCT work_date ORDER BY work_date)
+            FILTER (WHERE activity_desc = 'MALATTIA')  AS malattia_giorni
+        FROM x;
+
         """
         with get_conn() as conn, conn.cursor() as cur:
             cur.execute(sql, {"sheet_id": sheet_id})
-            return cur.fetchall()
+            row = cur.fetchone()
+            return {
+                "ferie_giorni": row["ferie_giorni"] or [],
+                "permesso_giorni": row["permesso_giorni"] or [],
+                "malattia_giorni": row["malattia_giorni"] or [],
+            }
+
     
     # --------- commessa --------------
-    def conta_giorni_per_commessa(self, sheet_id: int):
+    def get_giorni_per_commessa(self, sheet_id: int):
         """
         Giorni lavorati per commessa (pesati con rip_percent).
         Esempio: stesso giorno 60/40 => A += 0.6, B += 0.4
@@ -87,7 +105,7 @@ class RASRepo:
         sql = """
         SELECT
           commessa_cdc,
-          COALESCE(SUM(rip_percent), 0)::double precision AS giorni_commessa
+          COALESCE(SUM(rip_percent) / 100.0, 0)::double precision AS giorni_commessa
         FROM ras_lines
         WHERE sheet_id = %(sheet_id)s
           AND commessa_cdc IS NOT NULL

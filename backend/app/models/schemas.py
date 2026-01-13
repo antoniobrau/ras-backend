@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, date
 from pydantic import BaseModel
 from typing import Optional
 
@@ -15,10 +15,15 @@ class EmployeeOut(BaseModel):
 
 #-------------------------------------------------------------
 
+
+class CommessaDaysOut(BaseModel):
+    commessa_cdc: str
+    giorni_commessa: float
+
 class AbsencesOut(BaseModel):
-    ferie_giorni: int
-    permesso_giorni: int
-    malattia_giorni: int
+    ferie_giorni: list[date]
+    permesso_giorni: list[date]
+    malattia_giorni: list[date]
 
 
 class ChecksOut(BaseModel):
@@ -35,6 +40,7 @@ class MonthSummaryOut(BaseModel):
     sheet_id: Optional[int] = None
     absences: Optional[AbsencesOut] = None
     work_days: Optional[int] = None
+    commesse: list[CommessaDaysOut]
     ordinary_hours_est: Optional[int] = None
     ore_extra_tot: Optional[float] = None
     spese_tot: Optional[float] = None
@@ -49,6 +55,7 @@ class PeriodMonthOut(BaseModel):
 
     absences: AbsencesOut
     work_days: int
+    commesse : list[CommessaDaysOut]
     ordinary_hours_est: int
 
     ore_extra_tot: float
@@ -56,10 +63,11 @@ class PeriodMonthOut(BaseModel):
 
 
 class PeriodTotalsOut(BaseModel):
-    ferie_giorni: int
-    permesso_giorni: int
-    malattia_giorni: int
+    ferie_giorni : list[date]
+    permesso_giorni : list[date]
+    malattia_giorni : list[date]
     work_days: int
+    commesse : list[CommessaDaysOut]
     ordinary_hours_est: int
     ore_extra_tot: float
     spese_tot: float
@@ -71,3 +79,5 @@ class PeriodSummaryOut(BaseModel):
     to_ym: int
     months: list[PeriodMonthOut]
     totals: PeriodTotalsOut
+
+

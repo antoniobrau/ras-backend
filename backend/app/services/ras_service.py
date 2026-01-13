@@ -22,13 +22,15 @@ class RASService:
                 "exists": False,
             }
 
-        absences = self.repo.count_absences(sheet_id)
+        absences = self.repo.get_absence_days(sheet_id)
         work_days = self.repo.count_work_days(sheet_id)
         extra_spese = self.repo.get_extra_and_expenses(sheet_id)
 
         days_in_month = calendar.monthrange(year, month)[1]
         empty_days = self.repo.get_days_without_lines(sheet_id, days_in_month)
         mixed_days = self.repo.get_mixed_days(sheet_id)
+
+        commesse_giorni = self.repo.get_giorni_per_commessa(sheet_id)
 
         return {
             "email": email,
@@ -38,6 +40,7 @@ class RASService:
             "sheet_id": sheet_id,
             "absences": absences,  # dict: ferie_giorni, permesso_giorni, malattia_giorni
             "work_days": work_days,
+            "commesse" : commesse_giorni,
             "ordinary_hours_est": work_days * hours_per_workday,
             "ore_extra_tot": extra_spese["ore_extra_tot"],
             "spese_tot": extra_spese["spese_tot"],
@@ -62,21 +65,29 @@ class RASService:
                 in_range.append(s)
 
         months = []
-        tot_ferie = tot_perm = tot_mal = 0
+        tot_ferie = []; tot_perm = []; tot_mal = []
         tot_work_days = 0
         tot_ordinary = 0
         tot_extra = 0.0
         tot_spese = 0.0
 
+        dizionario_commesse = {}
+
         for s in in_range:
             sheet_id = s["id"]
-            absences = self.repo.count_absences(sheet_id)
+            absences = self.repo.get_absence_days(sheet_id)
             work_days = self.repo.count_work_days(sheet_id)
             extra_spese = self.repo.get_extra_and_expenses(sheet_id)
+            commesse_giorni = self.repo.get_giorni_per_commessa(sheet_id)
 
-            tot_ferie += absences["ferie_giorni"]
-            tot_perm += absences["permesso_giorni"]
-            tot_mal += absences["malattia_giorni"]
+            for _row in commesse_giorni:
+                _cdc = _row["commessa_cdc"]
+                _giorni = _row["giorni_commessa"]
+                dizionario_commesse[_cdc] = dizionario_commesse.get(_cdc, 0.0) + _giorni
+
+            tot_ferie.extend(absences["ferie_giorni"])
+            tot_perm.extend(absences["permesso_giorni"])
+            tot_mal.extend(absences["malattia_giorni"])
             tot_work_days += work_days
             tot_ordinary += work_days * hours_per_workday
             tot_extra += float(extra_spese["ore_extra_tot"])
@@ -88,11 +99,13 @@ class RASService:
                 "sheet_status": s["sheet_status"],
                 "absences": absences,
                 "work_days": work_days,
+                "commesse" : commesse_giorni,
                 "ordinary_hours_est": work_days * hours_per_workday,
                 "ore_extra_tot": extra_spese["ore_extra_tot"],
                 "spese_tot": extra_spese["spese_tot"],
             })
 
+        tot_commesse =  [ {"commessa_cdc": cdc, "giorni_commessa": giorni} for cdc, giorni in dizionario_commesse.items()]
         return {
             "email": email,
             "from_ym": from_ym,
@@ -103,6 +116,7 @@ class RASService:
                 "permesso_giorni": tot_perm,
                 "malattia_giorni": tot_mal,
                 "work_days": tot_work_days,
+                "commesse" : tot_commesse,
                 "ordinary_hours_est": tot_ordinary,
                 "ore_extra_tot": tot_extra,
                 "spese_tot": tot_spese,
