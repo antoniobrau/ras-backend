@@ -7,7 +7,6 @@ class RASRepo:
     """
     Repository RAS.
     Contiene SOLO query SQL e accesso ai dati.
-    Nessuna logica di business.
     """
 
     # ---------- sheets ----------
@@ -74,6 +73,26 @@ class RASRepo:
         WHERE sheet_id = %(sheet_id)s
           AND activity_desc IN ('FERIE','PERMESSO','MALATTIA')
         GROUP BY activity_desc;
+        """
+        with get_conn() as conn, conn.cursor() as cur:
+            cur.execute(sql, {"sheet_id": sheet_id})
+            return cur.fetchall()
+    
+    # --------- commessa --------------
+    def conta_giorni_per_commessa(self, sheet_id: int):
+        """
+        Giorni lavorati per commessa (pesati con rip_percent).
+        Esempio: stesso giorno 60/40 => A += 0.6, B += 0.4
+        """
+        sql = """
+        SELECT
+          commessa_cdc,
+          COALESCE(SUM(rip_percent), 0)::double precision AS giorni_commessa
+        FROM ras_lines
+        WHERE sheet_id = %(sheet_id)s
+          AND commessa_cdc IS NOT NULL
+        GROUP BY commessa_cdc
+        ORDER BY giorni_commessa DESC, commessa_cdc;
         """
         with get_conn() as conn, conn.cursor() as cur:
             cur.execute(sql, {"sheet_id": sheet_id})
